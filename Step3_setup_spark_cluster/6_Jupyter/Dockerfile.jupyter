@@ -40,6 +40,7 @@ RUN /opt/conda/bin/conda install python=3.6
 
 COPY ./config/requirements.txt .
 RUN pip3 install -r requirements.txt
+RUN yum install rsync
 
 WORKDIR ${SHARED_WORKSPACE}
 

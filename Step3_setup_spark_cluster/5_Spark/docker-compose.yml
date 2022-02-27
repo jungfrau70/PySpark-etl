@@ -8,6 +8,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.spark
+    command: tail -f /dev/null
     restart: always
     networks:
       netgroup:
@@ -16,6 +17,7 @@ services:
       - "4040:4040"
       - "9090:8080"
       - "8088:8088"
+      - "8888:8888"
       - "7077:7077"
       - "18040:18040"
     volumes:
@@ -26,9 +28,6 @@ services:
       - ./spark-data:/opt/spark-data
       - ../../dags:/home/jovyan/dags
     privileged: true
-    entrypoint: ["/usr/sbin/init"]
-    # command: |
-    #   -["jupyter", "lab", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
     deploy:
       resources:
         limits:
@@ -47,6 +46,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.spark
+    command: tail -f /dev/null
     restart: always
     networks:
       netgroup:
@@ -59,7 +59,7 @@ services:
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
     privileged: true
-    entrypoint: ["/usr/sbin/init"]
+    #entrypoint: ["/usr/sbin/init"]
     cap_add:
       - NET_ADMIN
     env_file:
@@ -72,6 +72,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.spark
+    command: tail -f /dev/null
     restart: always
     networks:
       netgroup:
@@ -84,7 +85,7 @@ services:
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
     privileged: true
-    entrypoint: ["/usr/sbin/init"]
+    #entrypoint: ["/usr/sbin/init"]
     cap_add:
       - NET_ADMIN
     env_file:
@@ -97,6 +98,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.spark
+    command: tail -f /dev/null
     restart: always
     networks:
       netgroup:
@@ -109,7 +111,7 @@ services:
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
     privileged: true
-    entrypoint: ["/usr/sbin/init"]
+    #entrypoint: ["/usr/sbin/init"]
     cap_add:
       - NET_ADMIN
     env_file:
@@ -122,6 +124,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.spark
+    command: tail -f /dev/null
     restart: always
     networks:
       netgroup:
@@ -134,7 +137,7 @@ services:
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
     privileged: true
-    entrypoint: ["/usr/sbin/init"]
+    #entrypoint: ["/usr/sbin/init"]
     cap_add:
       - NET_ADMIN
     env_file:

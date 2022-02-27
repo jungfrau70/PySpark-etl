@@ -64,15 +64,16 @@ docker exec \
 
 ## (if required) Remove data in hadoop-cluster
 
-./stop-hadoop-cluster.sh
+./stop-hadoop-cluster.sh && ./stop-spark-cluster.sh
 nodes='master worker1 worker2 worker3 worker4'
 for node in $nodes
 do
-    docker exec $node /usr/bin/rm -rf /home/hadoop/tmp/
+    docker exec $node rm -rf /home/hadoop/tmp/
 done
 docker exec master /opt/hadoop/bin/hdfs namenode -format
 
 ./start-hadoop-cluster.sh && ./start-spark-cluster.sh
+
 
 #########################################################################################
 # 6. (master) Start Hive Server2

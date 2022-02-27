@@ -581,8 +581,8 @@ docker exec -it master passwd
 # 6. Install Openssh server for cluster nodes
 #########################################################################################
 
-cat >install-openssh.sh<<EOF
-!/bin/bash
+cat >install-openssh-centos7.sh<<EOF
+#!/bin/bash
 yum install -y openssh-server openssh-clients openssh-askpass
 
 sed -i '/StrictHostKeyChecking/s/^#[ \t]*//g' /etc/ssh/ssh_config
@@ -598,15 +598,43 @@ systemctl status sshd
 systemctl enable sshd.service
 EOF
 
-chmod u+x install-openssh.sh
+chmod u+x install-openssh-centos7.sh
+
+
+cat >install-openssh-debian.sh<<EOF
+#!/bin/bash
+export PATH=/sbin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+apt-get update -y && apt-get upgrade -y
+apt-get install -y systemd
+apt-get install -y openssh-server
+
+sed -i '/StrictHostKeyChecking/s/^#[ \t]*//g' /etc/ssh/ssh_config
+sed -i 's/StrictHostKeyChecking ask/StrictHostKeyChecking no/g' /etc/ssh/ssh_config
+sed -i 's/StrictHostKeyChecking True/StrictHostKeyChecking no/g' /etc/ssh/ssh_config
+cat /etc/ssh/ssh_config | grep StrictHostKeyChecking
+
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sed -i 's/#PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+cat /etc/ssh/sshd_config | grep PermitRootLogin
+cat /etc/ssh/sshd_config | grep PasswordAuthentication
+
+service ssh start
+service ssh restart
+service ssh status
+EOF
+
+chmod u+x install-openssh-debian.sh
 
 docker ps -a
 
 nodes='master worker1 worker2 worker3 worker4'
 for node in $nodes
 do
-     docker cp install-openssh.sh $node:/root/
-     docker exec -it $node /bin/bash /root/install-openssh.sh
+    #docker cp install-openssh-centos7.sh $node:/root/
+    #docker exec -it $node /bin/bash /root/install-openssh-centos7.sh
+
+    docker cp install-openssh-debian.sh $node:/root/
+    docker exec -it $node /bin/bash /root/install-openssh-debian.sh
 done
 
 #########################################################################################
@@ -680,10 +708,13 @@ docker ps -a
 ## build custom docker image
 docker commit master jungfrau70/centos7:de-cluster.101
 
+lsb_release -a
+docker commit master jungfrau70/ubuntu18.04:de-cluster.1
+
 ## push customer docker image
 docker image ls
 docker login
-docker push jungfrau70/centos7:de-cluster.101
+docker push jungfrau70/ubuntu18.04:de-cluster.1
 
 #########################################################################################
 # 10. Clean up
@@ -874,41 +905,3 @@ worker4
 1045 Jps
 972 Worker
 
-
-#########################################################################################
-# 13. (in case of docker build) Distribute SSH keys to cluster 
-#########################################################################################
-
-## Set root's password for ssh key exchange
-nodes='master worker1 worker2 worker3 worker4'
-for node in $nodes
-do 
-  docker exec -it $node passwd
-done
-
-## Remove known_hosts for ReSet
-rm ~/.ssh/known_hosts 
-
-## Add nodes to known_hosts in deploy-server
-nodes='master worker1 worker2 worker3 worker4'
-for node in $nodes
-do 
-  ssh root@$node
-done
-
-## Add nodes to known_hosts in deploy-server
-nodes='worker1 worker2 worker3 worker4'
-for node in $nodes
-do
-    docker exec -it $node rm -rf ~/.ssh
-    ssh-copy-id root@$node
-done
-
-## Check if ansible works
-ansible -m ping cluster
-
-## Check if spark/hadoop-cluster works
-docker exec -it master ssh worker1
-docker exec -it master ssh worker2
-docker exec -it master ssh worker3 
-docker exec -it master ssh worker4 
