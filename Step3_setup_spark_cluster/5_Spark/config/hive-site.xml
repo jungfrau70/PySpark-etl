@@ -24,6 +24,11 @@
   </property>
 
   <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>hdfs://master:9000/apps/hive/warehouse</value>
+  </property>
+
+  <property>
     <name>hive.metastore.schema.verification</name>
     <value>false</value>
   </property>
@@ -51,17 +56,7 @@
 
   <property>
     <name>hive.server2.enable.doAs</name>
-    <value>false</value>
-  </property>
-
-  <property>
-    <name>hive.server2.enable.doAs</name>
-    <value>false</value>
-  </property>
-
-  <property>
-    <name>hive.server2.enable.doAs</name>
-    <value>false</value>
+    <value>true</value>
   </property>
 
   <property>

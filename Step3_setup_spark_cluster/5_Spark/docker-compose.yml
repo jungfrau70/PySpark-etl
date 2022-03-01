@@ -4,10 +4,7 @@ services:
   master:
     hostname: master
     container_name: master
-    image: jungfrau70/centos7  # jungfrau70/centos7:de-cluster.102
-    build:
-      context: .
-      dockerfile: Dockerfile.spark
+    image: jungfrau70/ubuntu18.04:de-cluster.5
     command: >
       sh -c "service ssh start &&
              tail -f /dev/null"
@@ -22,6 +19,7 @@ services:
       - "8888:8888"
       - "7077:7077"
       - "18040:18040"
+      - "18080:18080"      
     volumes:
       # Just specify a path and let the Engine create a volume
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -29,13 +27,30 @@ services:
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
       - ../../dags:/home/jovyan/dags
+      - type: bind
+        source: ./config/spark-env.sh
+        target: /opt/hive/conf/spark-env.sh
+      - type: bind
+        source: ./config/spark-defaults.conf
+        target: /opt/hive/conf/spark-defaults.conf
+      - type: bind
+        source: ./config/spark-slaves
+        target: /opt/hive/conf/slaves   
+      - type: bind
+        source: ./config/hive-env.sh
+        target: /opt/hive/conf/hive-env.sh
+      - type: bind
+        source: ./config/hive-site.xml
+        target: /opt/hive/conf/hive-site.xml
     privileged: true
     deploy:
       resources:
         limits:
-          memory: 2g
+          cpus: 4
+          memory: 4g
         reservations:
-          memory: 1g
+          cpus: 2
+          memory: 2g
     cap_add:
       - NET_ADMIN
     env_file:
@@ -44,10 +59,7 @@ services:
   worker1:
     hostname: worker1
     container_name: worker1
-    image: jungfrau70/centos7
-    build:
-      context: .
-      dockerfile: Dockerfile.spark
+    image: jungfrau70/ubuntu18.04:de-cluster.5
     command: >
       sh -c "service ssh start &&
              tail -f /dev/null"
@@ -63,7 +75,14 @@ services:
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
     privileged: true
-    #entrypoint: ["/usr/sbin/init"]
+    deploy:
+      resources:
+        limits:
+          cpus: 16
+          memory: 4g
+        reservations:
+          cpus: 8
+          memory: 2g
     cap_add:
       - NET_ADMIN
     env_file:
@@ -72,10 +91,7 @@ services:
   worker2:
     hostname: worker2
     container_name: worker2
-    image: jungfrau70/centos7
-    build:
-      context: .
-      dockerfile: Dockerfile.spark
+    image: jungfrau70/ubuntu18.04:de-cluster.5
     command: >
       sh -c "service ssh start &&
              tail -f /dev/null"
@@ -91,63 +107,14 @@ services:
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
     privileged: true
-    #entrypoint: ["/usr/sbin/init"]
-    cap_add:
-      - NET_ADMIN
-    env_file:
-      - cluster.env
-
-  worker3:
-    hostname: worker3
-    container_name: worker3
-    image: jungfrau70/centos7
-    build:
-      context: .
-      dockerfile: Dockerfile.spark
-    command: >
-      sh -c "service ssh start &&
-             tail -f /dev/null"
-    restart: always
-    networks:
-      netgroup:
-        ipv4_address: 172.18.0.33
-    depends_on:
-      - master
-    volumes:
-      # Just specify a path and let the Engine create a volume
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ./spark-apps:/opt/spark-apps
-      - ./spark-data:/opt/spark-data
-    privileged: true
-    #entrypoint: ["/usr/sbin/init"]
-    cap_add:
-      - NET_ADMIN
-    env_file:
-      - cluster.env
-
-  worker4:
-    hostname: worker4
-    container_name: worker4
-    image: jungfrau70/centos7
-    build:
-      context: .
-      dockerfile: Dockerfile.spark
-    command: >
-      sh -c "service ssh start &&
-             tail -f /dev/null"
-    restart: always
-    networks:
-      netgroup:
-        ipv4_address: 172.18.0.34
-    depends_on:
-      - master
-    volumes:
-      # Just specify a path and let the Engine create a volume
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ./spark-apps:/opt/spark-apps
-      - ./spark-data:/opt/spark-data
-    privileged: true
-    #entrypoint: ["/usr/sbin/init"]
+    deploy:
+      resources:
+        limits:
+          cpus: 16
+          memory: 4g
+        reservations:
+          cpus: 8
+          memory: 2g
     cap_add:
       - NET_ADMIN
     env_file:

@@ -151,7 +151,8 @@ COPY ./config/hive-env.sh /opt/hive/conf/hive-env.sh
 COPY ./config/hive-site.xml /opt/hive/conf/hive-site.xml
 
 RUN rm /opt/hive/lib/guava*.jar && \
-    cp /opt/hadoop/share/hadoop/hdfs/lib/guava-27.0-jre.jar /opt/hive/lib/ || echo "not exist"
+    cp /opt/hadoop/share/hadoop/hdfs/lib/guava-27.0-jre.jar /opt/hive/lib/ || echo "not exist" && \
+    ln -s /opt/hive/conf/hive-site.xml /usr/local/spark/conf/
 
 ### Download a postgresql jar file and copy it to /opt/hive/lib/
 RUN wget https://jdbc.postgresql.org/download/postgresql-42.2.24.jar --no-check-certificate -O /opt/hive/lib/postgresql-42.2.24.jar 

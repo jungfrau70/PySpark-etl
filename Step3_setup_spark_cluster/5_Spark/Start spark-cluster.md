@@ -17,13 +17,27 @@ cd $WORKDIR
 
 ## Instanticate the containers
 rm -rf db.sql/ postgres-data/ spark-apps/ spark-data
-docker-compose up -d
+docker-compose up 
 
 #########################################################################################
-# 2. Setup Hive metastore with PostgrSQL 9.2.24
+# 2. (deploy-server) Hadoop namenode
+#########################################################################################
+
+## (If required) Format namenode
+./stop-hadoop-cluster.sh && ./stop-spark-cluster.sh
+
+nodes='master worker1 worker2'
+for node in $nodes
+do
+    docker exec $node rm -rf /home/hadoop/tmp/
+done
+docker exec master /opt/hadoop/bin/hdfs namenode -format
+
+
+#########################################################################################
+# 3. Setup Hive metastore with PostgrSQL 9.2.24
      Now,Lets Set up Postgress Image in the Docker Container
 #########################################################################################
-
 docker exec \
     -it hive-postgres \
     psql -U postgres
@@ -33,46 +47,23 @@ CREATE DATABASE metastore;
 CREATE USER hive WITH ENCRYPTED PASSWORD 'go2team';
 GRANT ALL ON DATABASE metastore TO hive;	
 
+## Validate Metadata Tables
 \l to list
 \q to exit postgress
 
-
 #########################################################################################
-# 3. Initialize Hive
+# 4. Initialize Hive
 #########################################################################################
 ## Initialize Hive Metastore
-docker exec -it master /bin/bash
+docker exec -it master /opt/hive/bin/schematool -dbType postgres -initSchema
 
-/opt/hive/bin/schematool -dbType postgres -initSchema
-
-### if not found:
-export HIVE_HOME=/opt/hive
-export PATH=$PATH:${HIVE_HOME}/bin
-
-## Validate Metadata Tables
 docker exec \
     -it hive-postgres \
     psql -U postgres \
     -d metastore
-
 \d
 \q
-
-
-#########################################################################################
-# 4. (deploy-server) Hadoop namenode
-#########################################################################################
-
-## (If required) Format namenode
-./stop-hadoop-cluster.sh && ./stop-spark-cluster.sh
-
-nodes='master worker1 worker2 worker3 worker4'
-for node in $nodes
-do
-    docker exec $node rm -rf /home/hadoop/tmp/
-done
-docker exec master /opt/hadoop/bin/hdfs namenode -format
-
+\q
 
 #########################################################################################
 # 5. (deploy-server) Start Cluster
@@ -80,6 +71,9 @@ docker exec master /opt/hadoop/bin/hdfs namenode -format
 
 ## Start cluster
 ./start-hadoop-cluster.sh && ./start-spark-cluster.sh
+
+## Stop cluster
+./stop-spark-cluster.sh && ./stop-hadoop-cluster.sh
 
 ## Check cluster
 ./check-cluster.sh
@@ -100,17 +94,7 @@ worker1~4
 
 
 #########################################################################################
-# 6. (master) Start Hive Server2
-#########################################################################################
-
-## Start Hive-server2
-docker exec master /opt/hive/bin/hive --service metastore &
-docker exec master /opt/hive/bin/hive --service hiveserver2 &
-docker exec master ps -ef | grep -i hive
-
-
-#########################################################################################
-# 7. (master) Create directories in hdfs 
+# 6. (deploy-server) Create directories in hdfs 
 #########################################################################################
 
 cat >configure-directories.sh<<EOF
@@ -136,19 +120,53 @@ hdfs dfs -ls /spark-jars/mongo-spark-connector_2.11-2.4.0.jar
 EOF
 
 chmod u+x configure-directories.sh
-#./configure-directories.sh
 
-docker cp configure-directories.sh $node:/root/
-docker exec -it $node /bin/bash /root/configure-directories.sh
-
+docker cp configure-directories.sh master:/root/
+docker exec -it master /bin/bash /root/configure-directories.sh
 
 
 #########################################################################################
-# 8. Test Spark cluster
+# 6. (deploy-server) Start Hive Server2
 #########################################################################################
 
+## Start Hive-server2
 docker exec -it master /bin/bash
 
+/opt/hive/bin/hive --service metastore &
+/opt/hive/bin/hive --service hiveserver2 &
+ps -ef | grep -i hive
+
+#########################################################################################
+# 7. (deploy-server) Start history-server
+#########################################################################################
+
+## Start History-server
+docker exec -it master /bin/bash
+
+/usr/local/spark/sbin/start-history-server.sh &
+ps -ef | grep -i history
+
+
+#########################################################################################
+# 9. (master) Setup Jupyter server
+#########################################################################################
+#pip install jupyter_contrib_nbextensions
+
+jupyter notebook --generate-config
+jupyter notebook password
+
+cat >/root/.jupyter/jupyter_notebook_config.py<<EOF
+c.NotebookApp.ip = '0.0.0.0'
+c.NotebookApp.port = 8888
+c.NotebookApp.open_browser = False
+c.NotebookApp.allow_root = True
+EOF
+
+#########################################################################################
+# 10. (master) Test Spark cluster
+#########################################################################################
+
+docker stats
 ## Start pyspark
 
 ### All the commands(spark-shell,pyspark,spark-submit) are avaiable in:
@@ -185,21 +203,6 @@ set PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 
-
-#########################################################################################
-# 8. Start Jupyter server
-#########################################################################################
-pip install jupyter_contrib_nbextensions
-
-jupyter notebook --generate-config
-jupyter notebook password
-
-cat >/root/.jupyter/jupyter_notebook_config.py<<EOF
-c.NotebookApp.ip = '0.0.0.0'
-c.NotebookApp.port = 8888
-c.NotebookApp.open_browser = False
-c.NotebookApp.allow_root = True
-EOF
 
 #########################################################################################
 # 9. (deploy-server) Stop Cluster

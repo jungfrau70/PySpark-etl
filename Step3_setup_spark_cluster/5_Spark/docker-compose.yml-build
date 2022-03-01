@@ -22,6 +22,7 @@ services:
       - "8888:8888"
       - "7077:7077"
       - "18040:18040"
+      - "18080:18080"
     volumes:
       # Just specify a path and let the Engine create a volume
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -33,9 +34,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2g
+          memory: 4g
         reservations:
-          memory: 1g
+          memory: 2g
     cap_add:
       - NET_ADMIN
     env_file:
@@ -62,8 +63,12 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
-    privileged: true
-    #entrypoint: ["/usr/sbin/init"]
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 2g
     cap_add:
       - NET_ADMIN
     env_file:
@@ -90,64 +95,12 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
-    privileged: true
-    #entrypoint: ["/usr/sbin/init"]
-    cap_add:
-      - NET_ADMIN
-    env_file:
-      - cluster.env
-
-  worker3:
-    hostname: worker3
-    container_name: worker3
-    image: jungfrau70/centos7
-    build:
-      context: .
-      dockerfile: Dockerfile.spark
-    command: >
-      sh -c "service ssh start &&
-             tail -f /dev/null"
-    restart: always
-    networks:
-      netgroup:
-        ipv4_address: 172.18.0.33
-    depends_on:
-      - master
-    volumes:
-      # Just specify a path and let the Engine create a volume
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ./spark-apps:/opt/spark-apps
-      - ./spark-data:/opt/spark-data
-    privileged: true
-    #entrypoint: ["/usr/sbin/init"]
-    cap_add:
-      - NET_ADMIN
-    env_file:
-      - cluster.env
-
-  worker4:
-    hostname: worker4
-    container_name: worker4
-    image: jungfrau70/centos7
-    build:
-      context: .
-      dockerfile: Dockerfile.spark
-    command: >
-      sh -c "service ssh start &&
-             tail -f /dev/null"
-    restart: always
-    networks:
-      netgroup:
-        ipv4_address: 172.18.0.34
-    depends_on:
-      - master
-    volumes:
-      # Just specify a path and let the Engine create a volume
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ./spark-apps:/opt/spark-apps
-      - ./spark-data:/opt/spark-data
-    privileged: true
-    #entrypoint: ["/usr/sbin/init"]
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 2g
     cap_add:
       - NET_ADMIN
     env_file:

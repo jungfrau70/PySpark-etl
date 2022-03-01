@@ -1,5 +1,6 @@
 #Java
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+#export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 #export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-1.el7_9.x86_64/jre
 export PATH=${JAVA_HOME}/bin:${PATH}
 
@@ -39,10 +40,11 @@ export SPARK_MASTER=spark://master:7077
 export PYSPARK_PYTHON=python3
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS=notebook
-export SPARK_WORKER_CORES=1
-export SPARK_WORKER_MEMORY=1G
+export SPARK_DRIVER_CORES=1
 export SPARK_DRIVER_MEMORY=1G
+export SPARK_WORKER_CORES=3
+export SPARK_WORKER_MEMORY=3G
+export SPARK_EXECUTOR_CORES=1
 export SPARK_EXECUTOR_MEMORY=1G
-export SPARK_WORKLOAD=worker
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/hadoop/lib/native
 export PATH=${PATH}:${SPARK_HOME}/bin:${SPARK_HOME}/sbin:

@@ -578,7 +578,6 @@ cat >/etc/ansible/hosts<<EOF
 master ansible_host=172.18.0.11 ansible_user=root
 worker1 ansible_host=172.18.0.31 ansible_user=root
 worker2 ansible_host=172.18.0.32 ansible_user=root
-worker3 ansible_host=172.18.0.33 ansible_user=root
 
 [master]
 master ansible_host=172.18.0.11 ansible_user=root
@@ -586,7 +585,6 @@ master ansible_host=172.18.0.11 ansible_user=root
 [worker]
 worker1 ansible_host=172.18.0.31 ansible_user=root
 worker2 ansible_host=172.18.0.32 ansible_user=root
-worker3 ansible_host=172.18.0.33 ansible_user=root
 EOF
 
 

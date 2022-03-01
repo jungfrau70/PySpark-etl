@@ -21,7 +21,7 @@ export WORKDIR='/root/PySpark/Step3_setup_spark_cluster/5_Spark/'
 cd ~
 
 ## Set root's password for ssh key exchange
-nodes='master worker1 worker2 worker3 worker4'
+nodes='master worker1 worker2'
 for node in $nodes
 do 
     echo $node
@@ -36,14 +36,14 @@ done
 rm -rf ~/.ssh/known_hosts 
 
 ## Add nodes to known_hosts in deploy-server
-nodes='master worker1 worker2 worker3 worker4'
+nodes='master worker1 worker2'
 for node in $nodes
 do 
   ssh root@$node
 done
 
 ## Add nodes to known_hosts in deploy-server
-nodes='worker1 worker2 worker3 worker4'
+nodes='master worker1 worker2'
 for node in $nodes
 do
     docker exec -it $node rm -rf ~/.ssh
@@ -56,8 +56,6 @@ ansible -m ping cluster
 ## Check if ssh works
 docker exec -it master ssh worker1
 docker exec -it master ssh worker2
-docker exec -it master ssh worker3 
-docker exec -it master ssh worker4 
 
 
 #########################################################################################
@@ -69,7 +67,7 @@ cat >stop-hadoop-cluster.sh<<EOF
 docker exec master /opt/hadoop/sbin/stop-all.sh
 #docker exec master sudo /opt/hadoop/sbin/stop-all.sh
 
-nodes='master worker1 worker2 worker3 worker4'
+nodes='master worker1 worker2'
 for node in \$nodes
 do
     sleep 3
@@ -85,7 +83,7 @@ cat >start-hadoop-cluster.sh<<EOF
 docker exec master /opt/hadoop/sbin/start-all.sh
 #docker exec master sudo /opt/hadoop/sbin/start-all.sh
 
-nodes='master worker1 worker2 worker3 worker4'
+nodes='master worker1 worker2'
 for node in \$nodes
 do 
     sleep 3
@@ -99,9 +97,9 @@ chmod u+x ./start-hadoop-cluster.sh
 ## Stop spark-custer
 cat >stop-spark-cluster.sh<<EOF
 docker exec master /usr/local/spark/sbin/stop-all.sh
-docker exec master sudo /usr/local/spark/sbin/stop-all.sh
+#docker exec master sudo /usr/local/spark/sbin/stop-all.sh
 
-nodes='master worker1 worker2 worker3 worker4'
+nodes='master worker1 worker2'
 for node in \$nodes
 do
     sleep 3
@@ -117,7 +115,7 @@ cat >start-spark-cluster.sh<<EOF
 docker exec master /usr/local/spark/sbin/start-all.sh
 #docker exec master sudo /usr/local/spark/sbin/start-all.sh
 
-nodes='master worker1 worker2 worker3 worker4'
+nodes='master worker1 worker2'
 for node in \$nodes
 do 
     sleep 3
@@ -130,7 +128,7 @@ chmod u+x ./start-spark-cluster.sh
 
 ## Check cluster
 cat >check-cluster.sh<<EOF
-nodes='master worker1 worker2 worker3 worker4'
+nodes='master worker1 worker2'
 for node in \$nodes
 do 
     sleep 3
@@ -171,12 +169,12 @@ docker ps -a
 
 ## build custom docker image
 docker exec master lsb_release -a
-docker commit master jungfrau70/ubuntu18.04:de-cluster.3
+docker commit master jungfrau70/ubuntu18.04:de-cluster.4
 
 ## push customer docker image
 docker image ls
 docker login
-docker push jungfrau70/ubuntu18.04:de-cluster.3
+docker push jungfrau70/ubuntu18.04:de-cluster.4
 
 #########################################################################################
 # 5. (if rquired) Clean up
