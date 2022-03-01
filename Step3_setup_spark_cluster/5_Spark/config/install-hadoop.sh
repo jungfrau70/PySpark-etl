@@ -1,7 +1,6 @@
 #!/bin/bash
 cd /opt
 rm -rf hadoop*
-yum install -y wget
 
 wget https://dlcdn.apache.org/hadoop/common/hadoop-3.2.2/hadoop-3.2.2.tar.gz --no-check-certificate
 tar -xzf hadoop-3.2.2.tar.gz

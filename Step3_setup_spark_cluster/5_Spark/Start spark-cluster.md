@@ -58,13 +58,14 @@ docker exec \
 \d
 \q
 
+
 #########################################################################################
-# 4. (deploy-server) Hadoop namenode format 
+# 4. (deploy-server) Hadoop namenode
 #########################################################################################
 
-## (if required) Remove data in hadoop-cluster
-
+## (If required) Format namenode
 ./stop-hadoop-cluster.sh && ./stop-spark-cluster.sh
+
 nodes='master worker1 worker2 worker3 worker4'
 for node in $nodes
 do
@@ -72,7 +73,30 @@ do
 done
 docker exec master /opt/hadoop/bin/hdfs namenode -format
 
+
+#########################################################################################
+# 5. (deploy-server) Start Cluster
+#########################################################################################
+
+## Start cluster
 ./start-hadoop-cluster.sh && ./start-spark-cluster.sh
+
+## Check cluster
+./check-cluster.sh
+
+## Running process in hadoop/spark cluster
+master
+1586 Jps
+1462 Master
+537 NameNode
+1083 ResourceManager
+780 SecondaryNameNode
+
+worker1~4
+339 NodeManager
+501 Worker
+217 DataNode
+604 Jps
 
 
 #########################################################################################
@@ -80,15 +104,17 @@ docker exec master /opt/hadoop/bin/hdfs namenode -format
 #########################################################################################
 
 ## Start Hive-server2
-/opt/hive/bin/hive --service metastore &
-/opt/hive/bin/hive --service hiveserver2 &
-jobs
+docker exec master /opt/hive/bin/hive --service metastore &
+docker exec master /opt/hive/bin/hive --service hiveserver2 &
+docker exec master ps -ef | grep -i hive
+
 
 #########################################################################################
 # 7. (master) Create directories in hdfs 
 #########################################################################################
 
 cat >configure-directories.sh<<EOF
+source /opt/hadoop/etc/hadoop/hadoop-env.sh
 ### create directories for logs and jars in HDFS. 
 hdfs dfs -rm -r /spark-jars
 hdfs dfs -rm -r /spark-logs
@@ -110,7 +136,11 @@ hdfs dfs -ls /spark-jars/mongo-spark-connector_2.11-2.4.0.jar
 EOF
 
 chmod u+x configure-directories.sh
-./configure-directories.sh
+#./configure-directories.sh
+
+docker cp configure-directories.sh $node:/root/
+docker exec -it $node /bin/bash /root/configure-directories.sh
+
 
 
 #########################################################################################
@@ -155,56 +185,31 @@ set PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 
+
+#########################################################################################
+# 8. Start Jupyter server
+#########################################################################################
+pip install jupyter_contrib_nbextensions
+
+jupyter notebook --generate-config
+jupyter notebook password
+
+cat >/root/.jupyter/jupyter_notebook_config.py<<EOF
+c.NotebookApp.ip = '0.0.0.0'
+c.NotebookApp.port = 8888
+c.NotebookApp.open_browser = False
+c.NotebookApp.allow_root = True
+EOF
+
 #########################################################################################
 # 9. (deploy-server) Stop Cluster
 #########################################################################################
 
-./stop-jupyter-server.sh
-./stop-hive-server2.sh
-./stop-spark-cluster.sh
-./stop-hadoop-cluster.sh 
-
-./check-server.sh
-
-#########################################################################################
-# 10. Clean up (in deploy-server)
-#########################################################################################
-
-cd 
-
-## Remove all data
-docker ps -a
-docker-compose down
-
-export WORKDIR='/root/PySpark/Step4_setup_airflow_cluster/1_Spark/'
-cd $WORKDIR
-
-rm -rf db.sql postgres-data spark-apps spark-data
-
-docker stop $(docker ps -a -q)
-docker rm $(docker ps -a -q)
-docker network rm netgroup
-docker system prune -a
+./stop-spark-cluster.sh && ./stop-hadoop-cluster.sh 
 
 
 #########################################################################################
-# 11. (deploy-server) Build custom image
-#########################################################################################
-
-## Commit Docker image and push to repository
-docker ps -a
-docker commit master jungfrau70/centos7:de-cluster.102
-
-docker login                                                 
-docker push jungfrau70/centos7:de-cluster.102
-
-## Restart docker-compose with lastest docker image
-# cd PySpark/Step3_setup_spark_cluster/5_Spark/
-# docker-compose down
-
-
-#########################################################################################
-# 12. Backup and restore in VMware Workstation Player
+# 10. Backup and restore in VMware Workstation Player
 #########################################################################################
 
 Copy folder and rename it
