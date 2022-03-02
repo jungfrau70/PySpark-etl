@@ -4,10 +4,13 @@ services:
   master:
     hostname: master
     container_name: master
-    image: jungfrau70/ubuntu18.04:de-cluster.5
+    image: jungfrau70/centos7  # jungfrau70/centos7:de-cluster.102
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
     command: >
-      sh -c "service ssh start &&
-             tail -f /dev/null"
+      /bin/sh -c "service ssh start &&
+                  tail -f /dev/null"
     restart: always
     networks:
       netgroup:
@@ -18,38 +21,61 @@ services:
       - "8088:8088"
       - "8888:8888"
       - "7077:7077"
+      - "7777:7777"
       - "18040:18040"
-      - "18080:18080"      
+      - "18080:18080"
     volumes:
       # Just specify a path and let the Engine create a volume
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ~/.ssh:/root/.ssh:ro
+      - ~/.ssh:/root/.ssh:rw
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
-      - ../../dags:/home/jovyan/dags
-      - type: bind
-        source: ./config/spark-env.sh
-        target: /opt/hive/conf/spark-env.sh
+      - ../../workspace:/root/workspace
       - type: bind
         source: ./config/spark-defaults.conf
-        target: /opt/hive/conf/spark-defaults.conf
+        target: /usr/local/spark/conf/spark-defaults.conf
       - type: bind
         source: ./config/spark-slaves
-        target: /opt/hive/conf/slaves   
+        target: /usr/local/spark/conf/slaves
+      - type: bind
+        source: ./config/spark-env.sh
+        target: /usr/local/spark/conf/spark-env.sh
+      - type: bind
+        source: ./config/hadoop-workers
+        target: /opt/hadoop/etc/hadoop/workers
+      - type: bind
+        source: ./config/hadoop-slaves
+        target: /opt/hadoop/etc/hadoop/slaves
+      - type: bind
+        source: ./config/hadoop-env.sh
+        target: /opt/hadoop/etc/hadoop/hadoop-env.sh
+      - type: bind
+        source: ./config/core-site.xml
+        target: /opt/hadoop/etc/hadoop/core-site.xml
+      - type: bind
+        source: ./config/hdfs-site.xml
+        target: /opt/hadoop/etc/hadoop/hdfs-site.xml
+      - type: bind
+        source: ./config/mapred-site.xml
+        target: /opt/hadoop/etc/hadoop/mapred-site.xml
+      - type: bind
+        source: ./config/yarn-site.xml
+        target: /opt/hadoop/etc/hadoop/yarn-site.xml
       - type: bind
         source: ./config/hive-env.sh
         target: /opt/hive/conf/hive-env.sh
       - type: bind
         source: ./config/hive-site.xml
-        target: /opt/hive/conf/hive-site.xml
+        target: /opt/hive/conf/hive-site.xml        
+      - type: bind
+        source: ./config/hosts
+        target: /etc/hosts
     privileged: true
     deploy:
       resources:
         limits:
-          cpus: 4
           memory: 4g
         reservations:
-          cpus: 2
           memory: 2g
     cap_add:
       - NET_ADMIN
@@ -59,10 +85,13 @@ services:
   worker1:
     hostname: worker1
     container_name: worker1
-    image: jungfrau70/ubuntu18.04:de-cluster.5
+    image: jungfrau70/centos7
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
     command: >
-      sh -c "service ssh start &&
-             tail -f /dev/null"
+      /bin/sh -c "service ssh start &&
+                  tail -f /dev/null"
     restart: always
     networks:
       netgroup:
@@ -74,14 +103,50 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
-    privileged: true
+      - type: bind
+        source: ./config/spark-defaults.conf
+        target: /usr/local/spark/conf/spark-defaults.conf
+      - type: bind
+        source: ./config/spark-slaves
+        target: /usr/local/spark/conf/slaves
+      - type: bind
+        source: ./config/spark-env.sh
+        target: /usr/local/spark/conf/spark-env.sh
+      - type: bind
+        source: ./config/hadoop-workers
+        target: /opt/hadoop/etc/hadoop/workers
+      - type: bind
+        source: ./config/hadoop-slaves
+        target: /opt/hadoop/etc/hadoop/slaves
+      - type: bind
+        source: ./config/hadoop-env.sh
+        target: /opt/hadoop/etc/hadoop/hadoop-env.sh
+      - type: bind
+        source: ./config/core-site.xml
+        target: /opt/hadoop/etc/hadoop/core-site.xml
+      - type: bind
+        source: ./config/hdfs-site.xml
+        target: /opt/hadoop/etc/hadoop/hdfs-site.xml
+      - type: bind
+        source: ./config/mapred-site.xml
+        target: /opt/hadoop/etc/hadoop/mapred-site.xml
+      - type: bind
+        source: ./config/yarn-site.xml
+        target: /opt/hadoop/etc/hadoop/yarn-site.xml
+      - type: bind
+        source: ./config/hive-env.sh
+        target: /opt/hive/conf/hive-env.sh
+      - type: bind
+        source: ./config/hive-site.xml
+        target: /opt/hive/conf/hive-site.xml        
+      - type: bind
+        source: ./config/hosts
+        target: /etc/hosts
     deploy:
       resources:
         limits:
-          cpus: 16
           memory: 4g
         reservations:
-          cpus: 8
           memory: 2g
     cap_add:
       - NET_ADMIN
@@ -91,10 +156,13 @@ services:
   worker2:
     hostname: worker2
     container_name: worker2
-    image: jungfrau70/ubuntu18.04:de-cluster.5
+    image: jungfrau70/centos7
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
     command: >
-      sh -c "service ssh start &&
-             tail -f /dev/null"
+      /bin/sh -c "service ssh start &&
+                  tail -f /dev/null"
     restart: always
     networks:
       netgroup:
@@ -106,14 +174,50 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - ./spark-apps:/opt/spark-apps
       - ./spark-data:/opt/spark-data
-    privileged: true
+      - type: bind
+        source: ./config/spark-defaults.conf
+        target: /usr/local/spark/conf/spark-defaults.conf
+      - type: bind
+        source: ./config/spark-slaves
+        target: /usr/local/spark/conf/slaves
+      - type: bind
+        source: ./config/spark-env.sh
+        target: /usr/local/spark/conf/spark-env.sh
+      - type: bind
+        source: ./config/hadoop-workers
+        target: /opt/hadoop/etc/hadoop/workers
+      - type: bind
+        source: ./config/hadoop-slaves
+        target: /opt/hadoop/etc/hadoop/slaves
+      - type: bind
+        source: ./config/hadoop-env.sh
+        target: /opt/hadoop/etc/hadoop/hadoop-env.sh
+      - type: bind
+        source: ./config/core-site.xml
+        target: /opt/hadoop/etc/hadoop/core-site.xml
+      - type: bind
+        source: ./config/hdfs-site.xml
+        target: /opt/hadoop/etc/hadoop/hdfs-site.xml
+      - type: bind
+        source: ./config/mapred-site.xml
+        target: /opt/hadoop/etc/hadoop/mapred-site.xml
+      - type: bind
+        source: ./config/yarn-site.xml
+        target: /opt/hadoop/etc/hadoop/yarn-site.xml
+      - type: bind
+        source: ./config/hive-env.sh
+        target: /opt/hive/conf/hive-env.sh
+      - type: bind
+        source: ./config/hive-site.xml
+        target: /opt/hive/conf/hive-site.xml        
+      - type: bind
+        source: ./config/hosts
+        target: /etc/hosts
     deploy:
       resources:
         limits:
-          cpus: 16
           memory: 4g
         reservations:
-          cpus: 8
           memory: 2g
     cap_add:
       - NET_ADMIN

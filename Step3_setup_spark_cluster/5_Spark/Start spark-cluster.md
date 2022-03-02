@@ -130,11 +130,7 @@ docker exec -it master /bin/bash /root/configure-directories.sh
 #########################################################################################
 
 ## Start Hive-server2
-docker exec -it master /bin/bash
-
-/opt/hive/bin/hive --service metastore &
-/opt/hive/bin/hive --service hiveserver2 &
-ps -ef | grep -i hive
+./start-hive-server2.sh
 
 #########################################################################################
 # 7. (deploy-server) Start history-server

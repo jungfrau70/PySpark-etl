@@ -64,6 +64,7 @@ docker exec -it master ssh worker2
 
 ## Stop hadoop-custer
 cat >stop-hadoop-cluster.sh<<EOF
+#!/bin/bash
 docker exec master /opt/hadoop/sbin/stop-all.sh
 #docker exec master sudo /opt/hadoop/sbin/stop-all.sh
 
@@ -80,6 +81,7 @@ chmod u+x stop-hadoop-cluster.sh
 
 ## Start hadoop-custer
 cat >start-hadoop-cluster.sh<<EOF
+#!/bin/bash
 docker exec master /opt/hadoop/sbin/start-all.sh
 #docker exec master sudo /opt/hadoop/sbin/start-all.sh
 
@@ -96,6 +98,7 @@ chmod u+x ./start-hadoop-cluster.sh
 
 ## Stop spark-custer
 cat >stop-spark-cluster.sh<<EOF
+#!/bin/bash
 docker exec master /usr/local/spark/sbin/stop-all.sh
 #docker exec master sudo /usr/local/spark/sbin/stop-all.sh
 
@@ -112,6 +115,7 @@ chmod u+x stop-spark-cluster.sh
 
 ## Start spark-custer
 cat >start-spark-cluster.sh<<EOF
+#!/bin/bash
 docker exec master /usr/local/spark/sbin/start-all.sh
 #docker exec master sudo /usr/local/spark/sbin/start-all.sh
 
@@ -128,6 +132,7 @@ chmod u+x ./start-spark-cluster.sh
 
 ## Check cluster
 cat >check-cluster.sh<<EOF
+#!/bin/bash
 nodes='master worker1 worker2'
 for node in \$nodes
 do 
@@ -139,11 +144,26 @@ done
 EOF
 chmod u+x ./check-cluster.sh 
 
+## Start Hive-server2
+cat >start-hive-server2.sh<<EOF
+#!/bin/bash
+docker exec master /opt/hive/bin/hive --service metastore &
+docker exec master /opt/hive/bin/hive --service hiveserver2 &
+docker exec master ps -ef | grep -i hive
+EOF
+chmod u+x start-hive-server2.sh
+
 ## Stop Hive-server2
 cat >stop-hive-server2.sh<<EOF
-docker exec master kill %1
-docker exec master kill %2
+#!/bin/bash
+for i in \`docker exec master jps | grep -i RunJar | awk '{print \$1}'\`
+do
+    echo \$i
+    docker exec master kill -9 \$i
+done
+exit
 EOF
+
 chmod u+x stop-hive-server2.sh
 
 ## Start Spark history server
