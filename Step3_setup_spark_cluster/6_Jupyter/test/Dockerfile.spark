@@ -1,5 +1,0 @@
-FROM openkbs/tensorflow-python3-jupyter:latest
-
-
-#FROM jungfrau70/centos7:ansible.1
-#COPY --from=jupyter /opt/conda /opt/conda

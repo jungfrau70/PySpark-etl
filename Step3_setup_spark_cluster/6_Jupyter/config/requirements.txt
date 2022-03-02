@@ -1,3 +1,0 @@
-jupyter
-findspark
-pyspark==2.4.8
