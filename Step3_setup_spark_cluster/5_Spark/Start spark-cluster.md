@@ -19,8 +19,48 @@ cd $WORKDIR
 rm -rf db.sql/ postgres-data/ spark-apps/ spark-data
 docker-compose up 
 
+docker stats
+
 #########################################################################################
-# 2. (deploy-server) Hadoop namenode
+# 2. (deploy-server) Distribute ssh-keys
+#########################################################################################
+
+## Remove known_hosts for ReSet
+rm -rf ~/.ssh/known_hosts*
+
+## Set root's password for ssh key exchange
+nodes='master worker1 worker2'
+for node in $nodes
+do 
+    echo $node
+    docker exec -it $node passwd
+done
+
+## Add nodes to known_hosts in deploy-server
+nodes='master worker1 worker2'
+for node in $nodes
+do 
+  ssh root@$node
+done
+
+## Add nodes to known_hosts in deploy-server
+nodes='worker1 worker2'
+for node in $nodes
+do
+    docker exec -it $node rm -rf ~/.ssh
+    ssh-copy-id root@$node
+done
+
+## Check if ssh works
+docker exec -it master ssh worker1
+docker exec -it master ssh worker2
+docker exec -it worker1 ssh master
+docker exec -it worker1 ssh worker2
+docker exec -it worker2 ssh master
+docker exec -it worker2 ssh worker1
+
+#########################################################################################
+# 3. (deploy-server) Hadoop namenode
 #########################################################################################
 
 ## (If required) Format namenode
@@ -35,7 +75,7 @@ docker exec master /opt/hadoop/bin/hdfs namenode -format
 
 
 #########################################################################################
-# 3. Setup Hive metastore with PostgrSQL 9.2.24
+# 4. Setup Hive metastore with PostgrSQL 9.2.24
      Now,Lets Set up Postgress Image in the Docker Container
 #########################################################################################
 docker exec \
@@ -52,7 +92,7 @@ GRANT ALL ON DATABASE metastore TO hive;
 \q to exit postgress
 
 #########################################################################################
-# 4. Initialize Hive
+# 5. Initialize Hive
 #########################################################################################
 ## Initialize Hive Metastore
 docker exec -it master /opt/hive/bin/schematool -dbType postgres -initSchema
@@ -66,7 +106,7 @@ docker exec \
 \q
 
 #########################################################################################
-# 5. (deploy-server) Start Cluster
+# 6. (deploy-server) Start Cluster
 #########################################################################################
 
 ## Start cluster
@@ -126,47 +166,26 @@ docker exec -it master /bin/bash /root/configure-directories.sh
 
 
 #########################################################################################
-# 6. (deploy-server) Start Hive Server2
+# 7. (deploy-server) Start Hive Server2
 #########################################################################################
 
 ## Start Hive-server2
 ./start-hive-server2.sh
 
 #########################################################################################
-# 7. (deploy-server) Start history-server
+# 8. (deploy-server) Start spark cluster
 #########################################################################################
 
 ## Start History-server
-docker exec -it master /bin/bash
-
-/usr/local/spark/sbin/start-history-server.sh &
-ps -ef | grep -i history
+./start-spark-cluster.sh
 
 
 #########################################################################################
-# 9. (master) Setup Jupyter server
-#########################################################################################
-#pip install jupyter_contrib_nbextensions
-
-jupyter notebook --generate-config
-jupyter notebook password
-
-cat >/root/.jupyter/jupyter_notebook_config.py<<EOF
-c.NotebookApp.ip = '0.0.0.0'
-c.NotebookApp.port = 8888
-c.NotebookApp.open_browser = False
-c.NotebookApp.allow_root = True
-EOF
-
-#########################################################################################
-# 10. (master) Test Spark cluster
+# 9. (master) Test Spark cluster
 #########################################################################################
 
-docker stats
-## Start pyspark
-
-### All the commands(spark-shell,pyspark,spark-submit) are avaiable in:
-/usr/local/spark/bin
+### Move to working direcotry
+cd workspace
 
 ### Only if hadoop cluster is running
 pyspark --master yarn (default)
@@ -199,6 +218,30 @@ set PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 
+pyspark
+
+#########################################################################################
+# 10. (master) Setup Jupyter server
+#########################################################################################
+#pip install jupyter_contrib_nbextensions
+
+docker exec -it master /bin/bash
+env
+
+jupyter notebook --generate-config
+jupyter notebook password
+
+cat >/root/.jupyter/jupyter_notebook_config.py<<EOF
+c.NotebookApp.ip = '0.0.0.0'
+c.NotebookApp.port = 8888
+c.NotebookApp.open_browser = False
+c.NotebookApp.allow_root = True
+EOF
+
+export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_DRIVER_PYTHON_OPTS=notebook
+
+/usr/local/spark/bin/pyspark
 
 #########################################################################################
 # 9. (deploy-server) Stop Cluster
