@@ -13,12 +13,11 @@ Reference:
 
 export WORKDIR='/root/PySpark/Step3_setup_spark_cluster/5_Spark/'
 
+docker-compose up --build
 
 #########################################################################################
 # 1. Set Root's password for cluster nodes
 #########################################################################################
-
-cd ~
 
 ## Set root's password for ssh key exchange
 nodes='master worker1 worker2'
@@ -32,7 +31,12 @@ done
 # 2. Distribute SSH keys to cluster 
 #########################################################################################
 
-## Remove known_hosts for ReSet
+## Generate ssh key
+ssh-keygen -t rsa
+cd ~/.ssh
+cat id_rsa.pub > authorized_keys
+
+## Remove known_hosts for ReSet, if exists
 rm -rf ~/.ssh/known_hosts 
 
 ## Add nodes to known_hosts in deploy-server

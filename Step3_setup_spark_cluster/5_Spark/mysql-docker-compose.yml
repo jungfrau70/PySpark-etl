@@ -15,7 +15,7 @@ services:
       - "3307:3306" # 접근 포트 설정 (컨테이너 외부:컨테이너 내부)  <- 컨테이너 내부는 무조건 3306
     volumes:
       # Just specify a path and let the Engine create a volume
-      - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+      # - ./db.sql:/docker-entrypoint-initdb.d/db.sql
       - ./mysql-data:/var/lib/mysql # -v 옵션 (다렉토리 마운트 설정)
     privileged: true
     cap_add:

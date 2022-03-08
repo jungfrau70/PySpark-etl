@@ -15,9 +15,19 @@ Prerequsites:
 export WORKDIR='/root/PySpark/Step3_setup_spark_cluster/5_Spark/'
 cd $WORKDIR
 
+## Generate ssh keys
+ssh-keygen -t rsa
+
+cd ~/.ssh
+cat id_rsa.pub > authorized_keys
+
+## Remove known_hosts for ReSet
+rm -rf ~/.ssh/known_hosts*
+
 ## Instanticate the containers
 rm -rf db.sql/ postgres-data/ spark-apps/ spark-data
-docker-compose up 
+
+docker-compose up
 
 docker stats
 
@@ -25,13 +35,10 @@ docker stats
 # 2. (deploy-server) Distribute ssh-keys
 #########################################################################################
 
-## Remove known_hosts for ReSet
-rm -rf ~/.ssh/known_hosts*
-
 ## Set root's password for ssh key exchange
 nodes='master worker1 worker2'
 for node in $nodes
-do 
+do
     echo $node
     docker exec -it $node passwd
 done
@@ -54,10 +61,6 @@ done
 ## Check if ssh works
 docker exec -it master ssh worker1
 docker exec -it master ssh worker2
-docker exec -it worker1 ssh master
-docker exec -it worker1 ssh worker2
-docker exec -it worker2 ssh master
-docker exec -it worker2 ssh worker1
 
 #########################################################################################
 # 3. (deploy-server) Hadoop namenode
@@ -177,7 +180,7 @@ docker exec -it master /bin/bash /root/configure-directories.sh
 #########################################################################################
 
 ## Start History-server
-./start-spark-cluster.sh
+./start-spark-history-server.sh
 
 
 #########################################################################################
@@ -255,3 +258,8 @@ export PYSPARK_DRIVER_PYTHON_OPTS=notebook
 #########################################################################################
 
 Copy folder and rename it
+
+
+docker image 의 layer 를 보고 싶으면:
+$ docker history [image-tag-name]
+예: docker history python:3.6

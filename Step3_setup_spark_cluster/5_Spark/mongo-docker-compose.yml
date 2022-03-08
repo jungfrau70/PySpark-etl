@@ -1,14 +1,14 @@
 version: '3.7'
 
 services:
-  mysql:
+  mongo:
     hostname: mongo
     container_name: mongo
     image: mongo
     restart: always
     networks:
       netgroup:
-        ipv4_address: 172.18.0.14
+        ipv4_address: 172.18.0.13
     ports:
       - 27017:27017
     volumes:

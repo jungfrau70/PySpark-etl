@@ -2,6 +2,8 @@
 
 172.18.0.11  hive-postgres
 172.18.0.12  mysql
+172.18.0.13  mongo
+172.18.0.14  postgres
 
 172.18.0.21  master
 172.18.0.22  livy
