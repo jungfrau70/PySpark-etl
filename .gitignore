@@ -7,4 +7,5 @@
 /root/PySpark/Step3_setup_spark_cluster/5_Spark/general-postgres-data/pg_stat_tmp/
 /root/PySpark/Step3_setup_spark_cluster/5_Spark/mongodb-data/
 /root/PySpark/Step3_setup_spark_cluster/5_Spark/mongodb-data/diagnostic.data/
+/root/PySpark/Step3_setup_spark_cluster/5_Spark/mongodb-data/journal/
 .vscode/
