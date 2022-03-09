@@ -1,4 +1,7 @@
 /root/PySpark/Step3_setup_spark_cluster/5_Spark/db.sql/*
 /root/PySpark/Step3_setup_spark_cluster/5_Spark/postgres-data/*
-/root/PySpark/Step3_setup_spark_cluster/5_Spark/db.sql/spark-apps/*
-/root/PySpark/Step3_setup_spark_cluster/5_Spark/db.sql/spark-data/*
+/root/PySpark/Step3_setup_spark_cluster/5_Spark/spark-apps/*
+/root/PySpark/Step3_setup_spark_cluster/5_Spark/spark-data/*
+/root/PySpark/Step3_setup_spark_cluster/5_Spark/general-postgres-data/*
+/root/PySpark/Step3_setup_spark_cluster/5_Spark/mongodb-data/*
+.vscode/*
