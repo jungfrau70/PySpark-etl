@@ -4,7 +4,7 @@ services:
   mongo:
     hostname: mongo
     container_name: mongo
-    image: mongo
+    image: mongo:latest # 4.4.13
     restart: always
     networks:
       netgroup:

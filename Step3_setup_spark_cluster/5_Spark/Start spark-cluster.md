@@ -187,8 +187,13 @@ docker exec -it master /bin/bash /root/configure-directories.sh
 # 9. (master) Test Spark cluster
 #########################################################################################
 
+docker exec -it master /bin/bash
+
 ### Move to working direcotry
-cd workspace
+cd ~/workspace
+
+### Read env
+source /usr/local/spark/conf/spark-env.sh
 
 ### Only if hadoop cluster is running
 pyspark --master yarn (default)
@@ -244,6 +249,9 @@ EOF
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS=notebook
 
+### Move to working direcotry
+cd ~/workspace
+
 /usr/local/spark/bin/pyspark
 
 #########################################################################################
@@ -263,3 +271,7 @@ Copy folder and rename it
 docker image 의 layer 를 보고 싶으면:
 $ docker history [image-tag-name]
 예: docker history python:3.6
+
+
+## Start mysql
+docker-compose -f mysql-docker-compose.yml up
