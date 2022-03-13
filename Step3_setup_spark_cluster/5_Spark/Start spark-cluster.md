@@ -21,9 +21,6 @@ ssh-keygen -t rsa
 cd ~/.ssh
 cat id_rsa.pub > authorized_keys
 
-## Remove known_hosts for ReSet
-rm -rf ~/.ssh/known_hosts*
-
 ## Instanticate the containers
 rm -rf db.sql/ postgres-data/ spark-apps/ spark-data
 
@@ -43,14 +40,17 @@ do
     docker exec -it $node passwd
 done
 
-## Add nodes to known_hosts in deploy-server
+## Remove existing known_hosts for ReSet
+rm -rf ~/.ssh/known_hosts*
+
+## Add nodes to new known_hosts in deploy-server(=master)
 nodes='master worker1 worker2'
 for node in $nodes
 do 
   ssh root@$node
 done
 
-## Add nodes to known_hosts in deploy-server
+## Copy authorized_keys to workers
 nodes='worker1 worker2'
 for node in $nodes
 do
@@ -262,7 +262,24 @@ cd ~/workspace
 
 
 #########################################################################################
-# 10. Backup and restore in VMware Workstation Player
+# 10. Build the docker image for cluster 
+#########################################################################################
+
+docker ps -a
+
+## build custom docker image
+docker exec master lsb_release -a
+docker commit master jungfrau70/ubuntu18.04:de-master.1
+docker commit worker1 jungfrau70/ubuntu18.04:de-worker.1
+
+## push customer docker image
+docker image ls
+docker login
+docker push jungfrau70/ubuntu18.04:de-master.1
+docker push jungfrau70/ubuntu18.04:de-worker.1
+
+#########################################################################################
+# 11. Backup and restore in VMware Workstation Player
 #########################################################################################
 
 Copy folder and rename it
