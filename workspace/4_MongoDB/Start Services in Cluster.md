@@ -8,7 +8,9 @@ Prerequsites:
 #########################################################################################
 
 cd ~/PySpark
-git pull https://github.com/jungfrau70/team2.git
+git clone https://github.com/jungfrau70/team2.git .
+or
+git pull origin master
 
 ## Instanticate the cluster containers
 export WORKDIR='/root/PySpark/Step3_setup_spark_cluster/5_Spark/'
