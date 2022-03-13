@@ -14,7 +14,7 @@ services:
     volumes:
       # Just specify a path and let the Engine create a volume
       #- ./db.sql:/docker-entrypoint-initdb.d/db.sql
-      - ./general-postgres-data:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     privileged: true
     cap_add:
       - NET_ADMIN

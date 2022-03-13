@@ -116,13 +116,18 @@ export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 ## Must match with Spark version
 pyspark --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1
 
-pyspark --conf "spark.mongodb.input.uri=mongodb://root:go2team@mongo/Quake.quakes?readPreference=primaryPreferred"  \
-        --conf "spark.mongodb.output.uri=mongodb://root:go2team@mongo/Quake.quakes" \
-        --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1
-
 pyspark --conf "spark.mongodb.input.uri=mongodb://root:go2team@mongo/Quake.quakes?authSource=admin" \
         --conf "spark.mongodb.output.uri=mongodb://root:go2team@mongo/Quake.quakes?authSource=admin" \
         --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1
 
+pyspark --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1
+
+pyspark --packages org.postgresql:postgresql:42.3.3
 
 ~/start-spark-history-server.sh
+
+q
+
+docker exec \
+    -it postgres \
+    psql -U postgres
