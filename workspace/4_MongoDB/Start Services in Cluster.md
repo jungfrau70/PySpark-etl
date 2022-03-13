@@ -7,19 +7,17 @@ Prerequsites:
 # 1. (deploy-server) Start services
 #########################################################################################
 
-export WORKDIR='/root/PySpark/Step3_setup_spark_cluster/5_Spark/'
-cd $WORKDIR
+cd ~/PySpark
+git pull https://github.com/jungfrau70/team2.git
 
 ## Instanticate the cluster containers
-docker-compose down
-rm -rf db.sql/ hive-postgres-data/ spark-apps/ spark-data/ postgres-data/ mysql-data/
-
-docker-compose up -d
+export WORKDIR='/root/PySpark/Step3_setup_spark_cluster/5_Spark/'
+cd $WORKDIR
 
 ## Instanticate MongoDB
 docker-compose -f mongo-docker-compose.yml down
 rm -rf mongodb-data/
-docker-compose -f mongo-docker-compose.yml up -d
+docker-compose -f mongo-docker-compose.yml up -d (--build)
 
 ## Container stats
 docker stats
@@ -123,6 +121,7 @@ pyspark --conf "spark.mongodb.input.uri=mongodb://root:go2team@mongo/Quake.quake
 pyspark --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1
 
 pyspark --packages org.postgresql:postgresql:42.3.3
+                   org.postgresql:postgresql:42.3.3
 
 ~/start-spark-history-server.sh
 
