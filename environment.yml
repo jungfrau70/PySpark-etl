@@ -1,12 +1,15 @@
-# conda env create -f environment.yml
+# conda env create -f bokeh-conda.yml
 # or conda env update --name myenv --file local.yml --prune
 # or conda activate myenv
 #    and conda env update -f environment.yml --prune
 
-# github EBISYS / WaterWatch / database.csv
-# git clone https://github.com/bokeh/bokeh-notebooks.git
+# (base) conda install ipykernel
+# (base) python -m ipykernel --user --name bokeh --display-name "Python (bokeh)"
 
-name: Spark-MongoDB-Bokeh-Django-Flask
+# github EBISYS / WaterWatch / database.csv
+# git clone https://github.com/bokeh/bokeh-notebooks.git 6_Bokeh
+
+name: bokeh
 dependencies:
   - bokeh
   - django
